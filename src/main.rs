@@ -30,9 +30,21 @@ async fn main() -> Result<(), rocket::Error> {
     // trace
     info!("Started version {version} at {localtime}");
 
+    // Overwrite the default configuration of webserver
+    let overwrite_default_configuration = rocket::Config::figment()
+    										.merge(("port", 8443))
+    										.merge(("ident", "IntBridge"))
+    										.merge(("workers", 20))
+    										.merge(("address", "0.0.0.0"));
+    										
+
+	info!("Applied custom configuration");
+
     // Start the web server and add index function as route
+    // Instead use "rocket::build()" which start with default configuration
+    // we use custom to use above configuration
     // Each mount adds a route
-    let _webserver = rocket::build()
+    let _webserver = rocket::custom(overwrite_default_configuration)
     				.mount("/", routes![index])
     				.launch()
     				.await?;
@@ -43,7 +55,12 @@ async fn main() -> Result<(), rocket::Error> {
 }
 
 // This attribute sets the route
-#[get("/index")]
+#[get("/")]
 fn index() -> &'static str {
-	"Hello Wolrd"
+	""
+}
+
+#[get("/_")]
+fn empty() -> &'static str {
+	""
 }
